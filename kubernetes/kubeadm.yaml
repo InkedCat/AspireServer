@@ -3,7 +3,6 @@ kind: InitConfiguration
 dryRun: false
 nodeRegistration:
   criSocket: unix:///var/run/crio/crio.sock
-  taints: []
   imagePullPolicy: IfNotPresent
   imagePullSerial: true
 

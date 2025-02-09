@@ -3,6 +3,7 @@
 echo_success() {
     echo
     echo -e "\033[1;32m[SUCCESS]\033[0m $1"
+    echo
 }
 
 sudo kubeadm reset
