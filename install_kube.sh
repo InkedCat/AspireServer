@@ -13,14 +13,15 @@ echo_success() {
 }
 
 sudo kubeadm init --config ./kubernetes/kubeadm.yaml
-sleep 30
-kubectl taint nodes --all node-role.kubernetes.io/control-plane-
-echo_success "Kubernetes installed !"
 
 mkdir -p $HOME/.kube
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config
 echo_success "User kubectl initiated !"
+
+sleep 30
+kubectl taint nodes --all node-role.kubernetes.io/control-plane-
+echo_success "Kubernetes installed !"
 
 kubectl create -f https://raw.githubusercontent.com/projectcalico/calico/v3.29.2/manifests/tigera-operator.yaml
 
