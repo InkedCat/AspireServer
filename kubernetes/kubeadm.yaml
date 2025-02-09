@@ -3,9 +3,7 @@ kind: InitConfiguration
 dryRun: false
 nodeRegistration:
   criSocket: unix:///var/run/crio/crio.sock
-  taints:
-    - key: node-role.kubernetes.io/control-plane
-      effect: NoSchedule
+  taints: []
   imagePullPolicy: IfNotPresent
   imagePullSerial: true
 localAPIEndpoint:
