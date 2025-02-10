@@ -67,13 +67,13 @@ is_valid_IPV6() {
 init_kubeadm() {
   echo_info "Initializing the Kubernetes cluster..."
 
-  PRIMARY_IPV4=$(ip -4 addr show scope global | grep -m1 inet | awk '{print $2}' | cut -d/ -f1)
+  PRIMARY_IPV4="$(ip -4 addr show scope global | grep -m1 inet | awk '{print $2}' | cut -d/ -f1)"
   if ! is_valid_IPV4 $PRIMARY_IPV4; then
     echo_error "Invalid IPv4 address: $PRIMARY_IPV4"
     exit 1
   fi
-
-  PRIMARY_IPV6=$(ip -6 addr show scope global | grep -m1 inet6 | awk '{print $2}' | cut -d/ -f1)
+  
+  PRIMARY_IPV6="$(ip -6 addr show scope global | grep -m1 inet6 | awk '{print $2}' | cut -d/ -f1)"
   if ! is_valid_IPV6 $PRIMARY_IPV6; then
     echo_error "Invalid IPv6 address: $PRIMARY_IPV6"
     exit 1
