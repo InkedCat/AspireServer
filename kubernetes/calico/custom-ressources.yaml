@@ -15,6 +15,9 @@ spec:
         encapsulation: None
         natOutgoing: Enabled
         nodeSelector: all()
+    nodeAddressAutodetectionV4:
+      kubernetes: NodeInternalIP
+    nodeAddressAutodetectionV6: {}
 
 ---
 apiVersion: operator.tigera.io/v1
