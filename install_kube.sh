@@ -86,10 +86,9 @@ install_cert_manager() {
   kubectl apply -f "${TMP_DIR}/cloudflare-token-secret.yaml" &>> "${LOG_FILE}"
   rm "${TMP_DIR}/cloudflare-token-secret.yaml"
 
+  kubectl apply -f ./kubernetes/cert-manager/staging-cert-manager.yaml &>> "${LOG_FILE}"
 
-  kubectl apply -f ./kubernetes/cert-manager/cluster-cert-manager.yaml &>> "${LOG_FILE}"
-
-  echo_success "Cert Manager Cluster Issuer created !"
+  echo_success "Cert Manager Issuers created !"
 }
 
 ################################################################
@@ -140,6 +139,14 @@ configure_as_single_node() {
   sleep 10
 
   echo_success "Single node cluster ready !"
+}
+
+configure_namespaces() {
+  echo_info "Creating namespaces..."
+
+  kubectl apply -f ./kubernetes/namespaces/staging.yaml &>> "${LOG_FILE}"
+
+  echo_success "Namespaces created !"
 }
 
 ################################################################
@@ -204,6 +211,8 @@ init_kubeadm
 configure_user_kubectl
 
 configure_as_single_node
+
+configure_namespaces
 
 install_cni
 
