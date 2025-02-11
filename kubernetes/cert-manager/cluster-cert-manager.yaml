@@ -4,7 +4,6 @@ metadata:
   name: letsencrypt-staging
 spec:
   acme:
-    email: ${EMAIL_ADDRESS}
     server: https://acme-staging-v02.api.letsencrypt.org/directory
     privateKeySecretRef:
       name: staging-letsencrypt-account-key
