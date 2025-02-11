@@ -10,6 +10,7 @@ LOG_FILE="${TMP_DIR}/kubeadm.log"
 export KUBERNETES_VERSION="v1.32.1"
 CALICO_VERSION="v3.29.2"
 METRICS_VERSION="v0.7.2"
+CERT_MANAGER_VERSION="v1.16.3"
 
 blue=$(tput setaf 4)
 green=$(tput setaf 2)
@@ -36,6 +37,10 @@ echo_success() {
   printf "%s[SUCCESS]%s %s\n" "${green}" "${reset}" "$1"
   printf "[SUCCESS] %s\n" "$1" >> "${LOG_FILE}"
 }
+
+################################################################
+# Services installation
+################################################################
 
 install_cni() {
   echo_info "Installing Calico CNI..."
@@ -66,6 +71,75 @@ install_metrics_server() {
   fi
 }
 
+install_cert_manager() {
+  echo_info "Installing Cert Manager..."
+  
+  kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/${CERT_MANAGER_VERSION}/cert-manager.yaml &>> "${LOG_FILE}"
+
+  if ! kubectl wait --for=condition=available --timeout=30s deployment/cert-manager-webhook -n cert-manager &>> "${LOG_FILE}"; then
+    echo_error "Cert Manager not healthy after 30s, exiting."
+    exit 1
+  fi
+
+  export CLOUDFLARE_API_TOKEN="${CLOUDFLARE_API_TOKEN}"
+  envsubst < ./kubernetes/cert-manager/cluster-issuer.yaml > "${TMP_DIR}/cluster-issuer.yaml"
+
+  kubectl apply -f "${TMP_DIR}/cluster-issuer.yaml" &>> "${LOG_FILE}"
+}
+
+################################################################
+# Kubernetes installation
+################################################################
+
+init_kubeadm() {
+  echo_info "Initializing the Kubernetes cluster..."
+  
+  echo_success "Selected interface: ${selected_interface}"
+  export PRIMARY_IPV4="$(echo "${selected_interface}" | awk -F'[ /]+' '{print $1}')"
+
+  envsubst < ./kubernetes/kubeadm.yaml > "${TMP_DIR}/kubeadm.yaml"
+
+  sudo kubeadm init --config "${TMP_DIR}/kubeadm.yaml" &>> "${LOG_FILE}"
+
+  echo_success "Kubernetes installed !"
+}
+
+wait_for_nodes() {
+  echo_info "Waiting for nodes to be ready..."
+
+  if ! kubectl wait --for=condition=Ready --all nodes --timeout=180s &>> "${LOG_FILE}" ; then
+    echo_error "Nodes not ready after 180s, exiting."
+    exit 1
+  fi
+
+  echo_success "Nodes ready !"
+}
+
+configure_user_kubectl() {
+  echo_info "Configuring user kubectl..."
+    
+  mkdir -p "${HOME}/.kube"
+  sudo cp -i /etc/kubernetes/admin.conf "${HOME}/.kube/config"
+  sudo chown "$(id -u):$(id -g)" "${HOME}/.kube/config"
+
+  echo_success "$(id -un) kubectl configured !"
+}
+
+configure_as_single_node() {
+  echo_info "Configuring single node cluster..."
+
+  kubectl taint nodes --all node-role.kubernetes.io/control-plane- &>> "${LOG_FILE}"
+
+  echo_info "Waiting for single node cluster to be ready..."
+  sleep 10
+
+  echo_success "Single node cluster ready !"
+}
+
+################################################################
+# Variables setup
+################################################################
+
 choose_interface() {
   while true; do
     echo_info "Available network interfaces:"
@@ -89,54 +163,22 @@ choose_interface() {
   done
 }
 
-init_kubeadm() {
-  echo_info "Initializing the Kubernetes cluster..."
-  
+setup_variables() {
+  echo_warning "Please enter your Cloudflare API token to use for the cluster"
+  read -r -p "CF Token: " CLOUDFLARE_API_TOKEN
+
+  echo_warning "Please choose the network interface to use for the cluster"
   choose_interface
-  echo_success "Selected interface: ${selected_interface}"
-  export PRIMARY_IPV4="$(echo "${selected_interface}" | awk -F'[ /]+' '{print $1}')"
-
-  envsubst < ./kubernetes/kubeadm.yaml > "${TMP_DIR}/kubeadm.yaml"
-
-  sudo kubeadm init --config "${TMP_DIR}/kubeadm.yaml" &>> "${LOG_FILE}"
-
-  echo_success "Kubernetes installed !"
 }
 
-wait_for_nodes() {
-  echo_info "Waiting for nodes to be ready..."
-
-  if ! kubectl wait --for=condition=Ready --all nodes --timeout=180s &>> "${LOG_FILE}" ; then
-    echo_error "Nodes not ready after 180s, exiting."
-    exit 1
-  fi
-
-  echo_success "Nodes ready !"
-}
-
-
-configure_user_kubectl() {
-  echo_info "Configuring user kubectl..."
-    
-  mkdir -p "${HOME}/.kube"
-  sudo cp -i /etc/kubernetes/admin.conf "${HOME}/.kube/config"
-  sudo chown "$(id -u):$(id -g)" "${HOME}/.kube/config"
-
-  echo_success "$(id -un) kubectl configured !"
-}
-
-configure_as_single_node() {
-  echo_info "Configuring single node cluster..."
-
-  kubectl taint nodes --all node-role.kubernetes.io/control-plane- &>> "${LOG_FILE}"
-
-  echo_info "Waiting for single node cluster to be ready..."
-  sleep 10
-
-  echo_success "Single node cluster ready !"
-}
+################################################################
+# Main script
+################################################################
 
 echo_info "Starting Aspire Kubernetes install..."
+
+setup_variables
+
 echo_info "Logs are available at ${LOG_FILE}"
 
 echo_info "Configuring control-plane node..."
@@ -147,6 +189,8 @@ configure_user_kubectl
 install_cni
 
 install_metrics_server
+
+install_cert_manager
 
 wait_for_nodes
 
