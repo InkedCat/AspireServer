@@ -83,12 +83,7 @@ install_cert_manager() {
     echo_success "Cert Manager installed !"
   fi
 
-  export CLOUDFLARE_API_TOKEN="${CLOUDFLARE_API_TOKEN}"
-  envsubst < ./kubernetes/cert-manager/cluster-cert-manager.yaml > "${TMP_DIR}/cluster-issuer.yaml"
-
-  kubectl apply -f "${TMP_DIR}/cluster-issuer.yaml" &>> "${LOG_FILE}"
-
-  rm "${TMP_DIR}/cluster-issuer.yaml"
+  kubectl apply -f ./kubernetes/cert-manager/cluster-cert-manager.yaml &>> "${LOG_FILE}"
 
   echo_success "Cert Manager Cluster Issuer created !"
 }
@@ -168,10 +163,22 @@ choose_interface() {
   done
 }
 
-setup_variables() {
+setup_cloudflare() {
   echo_warning "Please enter your Cloudflare API token to use for the cluster"
   read -r -p "CF Token: " CLOUDFLARE_API_TOKEN
+  export CLOUDFLARE_API_TOKEN="${CLOUDFLARE_API_TOKEN}"
+  
+  envsubst < ./kubernetes/secrets/cloudflare-token.yaml > "${TMP_DIR}/cloudflare-token-secret.yaml"
+
+  kubectl apply -f "${TMP_DIR}/cloudflare-token-secret.yaml" &>> "${LOG_FILE}"
+
+  rm "${TMP_DIR}/cloudflare-token-secret.yaml"
+
   echo_success "Cloudflare API Token secret created !"
+}
+
+setup_variables() {
+  setup_cloudflare
 
   echo_warning "Please choose the network interface to use for the cluster"
   choose_interface
