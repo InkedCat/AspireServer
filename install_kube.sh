@@ -76,9 +76,11 @@ install_cert_manager() {
   
   kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/${CERT_MANAGER_VERSION}/cert-manager.yaml &>> "${LOG_FILE}"
 
+  echo_info "Waiting for Cert Manager to be ready..."
   if ! kubectl wait --for=condition=available --timeout=30s deployment/cert-manager-webhook -n cert-manager &>> "${LOG_FILE}"; then
-    echo_error "Cert Manager not healthy after 30s, exiting."
-    exit 1
+    echo_warning "Cert Manager not healthy after 30s. Please check the logs to see what went wrong."
+  else
+    echo_success "Cert Manager installed !"
   fi
 
   export CLOUDFLARE_API_TOKEN="${CLOUDFLARE_API_TOKEN}"
@@ -188,9 +190,9 @@ configure_user_kubectl
 
 install_cni
 
-install_metrics_server
-
 install_cert_manager
+
+install_metrics_server
 
 wait_for_nodes
 
