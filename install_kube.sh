@@ -96,7 +96,6 @@ install_cert_manager() {
 init_kubeadm() {
   echo_info "Initializing the Kubernetes cluster..."
   
-  echo_success "Selected interface: ${selected_interface}"
   export PRIMARY_IPV4="$(echo "${selected_interface}" | awk -F'[ /]+' '{print $1}')"
 
   envsubst < ./kubernetes/kubeadm.yaml > "${TMP_DIR}/kubeadm.yaml"
@@ -168,9 +167,11 @@ choose_interface() {
 setup_variables() {
   echo_warning "Please enter your Cloudflare API token to use for the cluster"
   read -r -p "CF Token: " CLOUDFLARE_API_TOKEN
+  echo_success "Cloudflare API Token secret created !"
 
   echo_warning "Please choose the network interface to use for the cluster"
   choose_interface
+  echo_success "Selected interface: ${selected_interface}"
 }
 
 ################################################################
