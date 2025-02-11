@@ -87,6 +87,10 @@ install_cert_manager() {
   envsubst < ./kubernetes/cert-manager/cluster-cert-manager.yaml > "${TMP_DIR}/cluster-issuer.yaml"
 
   kubectl apply -f "${TMP_DIR}/cluster-issuer.yaml" &>> "${LOG_FILE}"
+
+  rm "${TMP_DIR}/cluster-issuer.yaml"
+
+  echo_success "Cert Manager Cluster Issuer created !"
 }
 
 ################################################################
