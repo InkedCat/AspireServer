@@ -35,6 +35,4 @@ spec:
             - name: websecure
               containerPort: 443
             - name: vpn-web
-              containerPort: 8081
-            - name: dashboard
-              containerPort: 8080
+              containerPort: 81
