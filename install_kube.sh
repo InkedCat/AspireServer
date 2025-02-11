@@ -84,7 +84,7 @@ install_cert_manager() {
   fi
 
   export CLOUDFLARE_API_TOKEN="${CLOUDFLARE_API_TOKEN}"
-  envsubst < ./kubernetes/cert-manager/cluster-issuer.yaml > "${TMP_DIR}/cluster-issuer.yaml"
+  envsubst < ./kubernetes/cert-manager/cluster-cert-manager.yaml > "${TMP_DIR}/cluster-issuer.yaml"
 
   kubectl apply -f "${TMP_DIR}/cluster-issuer.yaml" &>> "${LOG_FILE}"
 }
@@ -189,6 +189,8 @@ init_kubeadm
 
 configure_user_kubectl
 
+configure_as_single_node
+
 install_cni
 
 install_cert_manager
@@ -196,7 +198,5 @@ install_cert_manager
 install_metrics_server
 
 wait_for_nodes
-
-configure_as_single_node
 
 echo_success "Aspire Kubernetes installed !"
