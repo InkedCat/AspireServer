@@ -7,7 +7,7 @@ mkdir -p "${TMP_DIR}"
 
 LOG_FILE="${TMP_DIR}/kubeadm.log"
 
-export KUBERNETES_VERSION="v1.32.1"
+K8S_VERSION="v1.32.1"
 CALICO_VERSION="v3.29.2"
 METRICS_VERSION="v0.7.2"
 CERT_MANAGER_VERSION="v1.16.3"
@@ -83,6 +83,10 @@ install_cert_manager() {
     echo_success "Cert Manager installed !"
   fi
 
+  kubectl apply -f "${TMP_DIR}/cloudflare-token-secret.yaml" &>> "${LOG_FILE}"
+  rm "${TMP_DIR}/cloudflare-token-secret.yaml"
+
+
   kubectl apply -f ./kubernetes/cert-manager/cluster-cert-manager.yaml &>> "${LOG_FILE}"
 
   echo_success "Cert Manager Cluster Issuer created !"
@@ -96,8 +100,10 @@ init_kubeadm() {
   echo_info "Initializing the Kubernetes cluster..."
   
   export PRIMARY_IPV4="$(echo "${selected_interface}" | awk -F'[ /]+' '{print $1}')"
-
+  export KUBERNETES_VERSION="${K8S_VERSION}"
   envsubst < ./kubernetes/kubeadm.yaml > "${TMP_DIR}/kubeadm.yaml"
+  unset PRIMARY_IPV4
+  unset KUBERNETES_VERSION
 
   sudo kubeadm init --config "${TMP_DIR}/kubeadm.yaml" &>> "${LOG_FILE}"
 
@@ -164,15 +170,12 @@ choose_interface() {
 }
 
 setup_cloudflare() {
-  echo_warning "Please enter your Cloudflare API token to use for the cluster"
+  echo_warning "Please enter your Cloudflare API token to use for the cluster issuer"
   read -r -p "CF Token: " CLOUDFLARE_API_TOKEN
+
   export CLOUDFLARE_API_TOKEN="${CLOUDFLARE_API_TOKEN}"
-  
   envsubst < ./kubernetes/secrets/cloudflare-token.yaml > "${TMP_DIR}/cloudflare-token-secret.yaml"
-
-  kubectl apply -f "${TMP_DIR}/cloudflare-token-secret.yaml" &>> "${LOG_FILE}"
-
-  rm "${TMP_DIR}/cloudflare-token-secret.yaml"
+  unset CLOUDFLARE_API_TOKEN
 
   echo_success "Cloudflare API Token secret created !"
 }
