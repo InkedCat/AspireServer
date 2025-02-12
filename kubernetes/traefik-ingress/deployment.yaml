@@ -20,7 +20,7 @@ spec:
         - name: traefik
           image: traefik:v3.3
           args:
-            - --api.insecure
+            - --api
             - --providers.kubernetesingress
           resources:
             limits:
