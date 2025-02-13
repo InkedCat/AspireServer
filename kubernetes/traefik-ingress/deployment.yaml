@@ -21,7 +21,7 @@ spec:
           image: traefik:v3.3
           args:
             - --api
-            - --providers.kubernetesingress
+            - --providers.kubernetesCRD
           resources:
             limits:
               memory: "512Mi"

@@ -7,10 +7,14 @@ mkdir -p "${TMP_DIR}"
 
 LOG_FILE="${TMP_DIR}/kubeadm.log"
 
+YQ_VERSION="4.11.2"
+YQ_BINARY="yq_linux_amd64"
+
 K8S_VERSION="v1.32.1"
 CALICO_VERSION="v3.29.2"
 METRICS_VERSION="v0.7.2"
 CERT_MANAGER_VERSION="v1.16.3"
+TRAEFIK_VERSION="v3.3"
 
 blue=$(tput setaf 4)
 green=$(tput setaf 2)
@@ -37,6 +41,21 @@ echo_success() {
   printf "%s[SUCCESS]%s %s\n" "${green}" "${reset}" "$1"
   printf "[SUCCESS] %s\n" "$1" >> "${LOG_FILE}"
 }
+
+################################################################
+# Setup prerequisites
+################################################################
+
+install_yq() {
+  echo_info "Installing yq..."
+
+  wget https://github.com/mikefarah/yq/releases/download/${VERSION}/${BINARY} -O "${TMP_DIR}/yq"
+
+  chmod +x "${TMP_DIR}/yq"
+  
+  echo_success "yq installed !"
+}
+
 
 ################################################################
 # Services installation
@@ -89,6 +108,60 @@ install_cert_manager() {
   kubectl apply -f ./kubernetes/cert-manager/staging-cert-manager.yaml &>> "${LOG_FILE}"
 
   echo_success "Cert Manager Issuers created !"
+}
+
+install_traefik_crds() {
+  echo_info "Creating Traefik CRDs..."
+
+  kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/${TRAEFIK_VERSION}/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml
+  kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/${TRAEFIK_VERSION}/docs/content/reference/dynamic-configuration/kubernetes-crd-rbac.yml
+
+  echo_success "Traefik CRDs created !"
+}
+
+install_traefik_pre() {
+  echo_info "Installing Traefik pre-requisites..."
+
+  kubectl apply -f ./kubernetes/traefik-ingress/rbac/account.yaml &>> "${LOG_FILE}"
+  kubectl apply -f ./kubernetes/traefik-ingress/rbac/cluster-role.yaml &>> "${LOG_FILE}"
+  kubectl apply -f ./kubernetes/traefik-ingress/rbac/cluster-role-binding.yaml &>> "${LOG_FILE}"
+
+  echo_success "Traefik pre-requisites installed !"
+}
+
+install_traefik_extra() {
+  echo_info "Installing Traefik extra components..."
+
+  kubectl apply -f ./kubernetes/traefik-ingress/middlewares/https*redirect.yaml &>> "${LOG_FILE}"
+  kubectl apply -f ./kubernetes/traefik-ingress/routes/api.yaml &>> "${LOG_FILE}"
+  kubectl apply -f ./kubernetes/traefik-ingress/service.yaml &>> "${LOG_FILE}"
+  kubectl apply -f ./kubernetes/traefik-ingress/tls/staging-tls.yaml &>> "${LOG_FILE}"
+
+  echo_success "Traefik extra components installed !"
+}
+
+install_traefik() {
+  echo_info "Installing Traefik..."
+
+  install_traefik_crds
+
+  install_traefik_pre
+
+  cat ./kubernetes/traefik-ingress/deployement.yaml \ | 
+  /${TMP_DIR}/yq '.spec.template.spec.containers[0].image = "traefik:${TRAEFIK_VERSION}"' "${TMP_DIR}/traefik-deployement.yaml"
+
+  kubectl apply -f "${TMP_DIR}/traefik-deployement.yaml" &>> "${LOG_FILE}"
+
+  echo_info "Waiting for Traefik to be ready..."
+  if ! kubectl wait --for=condition=available --timeout=30s deployment/traefik -n kube-system &>> "${LOG_FILE}"; then
+    echo_warning "Traefik not healthy after 30s. Please check the logs to see what went wrong."
+  else
+    echo_success "Traefik installed !"
+  fi
+
+  install_traefik_extra
+
+  echo_success "Traefik Ingress created !"
 }
 
 ################################################################
@@ -198,6 +271,12 @@ setup_variables() {
 ################################################################
 # Main script
 ################################################################
+
+echo_info "Script prequisites setup..."
+
+install_yq
+
+echo_success "Script now ready !"
 
 echo_info "Starting Aspire Kubernetes install..."
 
