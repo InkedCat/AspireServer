@@ -49,7 +49,7 @@ echo_success() {
 install_yq() {
   echo_info "Installing yq..."
 
-  wget https://github.com/mikefarah/yq/releases/download/${VERSION}/${BINARY} -O "${TMP_DIR}/yq"
+  wget https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/${YQ_BINARY} -O "${TMP_DIR}/yq"
 
   chmod +x "${TMP_DIR}/yq"
   
