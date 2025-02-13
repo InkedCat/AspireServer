@@ -7,7 +7,7 @@ mkdir -p "${TMP_DIR}"
 
 LOG_FILE="${TMP_DIR}/kubeadm.log"
 
-YQ_VERSION="4.11.2"
+YQ_VERSION="v4.45.1"
 YQ_BINARY="yq_linux_amd64"
 
 K8S_VERSION="v1.32.1"
@@ -49,7 +49,10 @@ echo_success() {
 install_yq() {
   echo_info "Installing yq..."
 
-  wget https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/${YQ_BINARY} -O "${TMP_DIR}/yq"
+  if ! wget https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/${YQ_BINARY} -O "${TMP_DIR}/yq" &>> "${LOG_FILE}"; then
+    echo_error "Failed to download yq, exiting."
+    exit 1
+  fi
 
   chmod +x "${TMP_DIR}/yq"
   
@@ -146,11 +149,11 @@ install_traefik() {
   install_traefik_crds
 
   install_traefik_pre
+ 
+  cat ./kubernetes/traefik-ingress/deployment.yaml |\
+/${TMP_DIR}/yq '.spec.template.spec.containers[0].image = "traefik:${TRAEFIK_VERSION}"' > "${TMP_DIR}/traefik-deployment.yaml"
 
-  cat ./kubernetes/traefik-ingress/deployement.yaml \ | 
-  /${TMP_DIR}/yq '.spec.template.spec.containers[0].image = "traefik:${TRAEFIK_VERSION}"' "${TMP_DIR}/traefik-deployement.yaml"
-
-  kubectl apply -f "${TMP_DIR}/traefik-deployement.yaml" &>> "${LOG_FILE}"
+  kubectl apply -f "${TMP_DIR}/traefik-deployment.yaml" &>> "${LOG_FILE}"
 
   echo_info "Waiting for Traefik to be ready..."
   if ! kubectl wait --for=condition=available --timeout=30s deployment/traefik -n kube-system &>> "${LOG_FILE}"; then
@@ -298,6 +301,8 @@ install_cni
 install_cert_manager
 
 install_metrics_server
+
+install_traefik
 
 wait_for_nodes
 
