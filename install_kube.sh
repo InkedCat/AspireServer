@@ -116,8 +116,8 @@ install_cert_manager() {
 install_traefik_crds() {
   echo_info "Creating Traefik CRDs..."
 
-  kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/${TRAEFIK_VERSION}/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml
-  kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/${TRAEFIK_VERSION}/docs/content/reference/dynamic-configuration/kubernetes-crd-rbac.yml
+  kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/${TRAEFIK_VERSION}/docs/content/reference/dynamic-configuration/kubernetes-crd-definition-v1.yml &>> "${LOG_FILE}"
+  kubectl apply -f https://raw.githubusercontent.com/traefik/traefik/${TRAEFIK_VERSION}/docs/content/reference/dynamic-configuration/kubernetes-crd-rbac.yml &>> "${LOG_FILE}"
 
   echo_success "Traefik CRDs created !"
 }
