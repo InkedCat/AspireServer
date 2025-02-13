@@ -151,7 +151,7 @@ install_traefik() {
   install_traefik_pre
  
   cat ./kubernetes/traefik-ingress/deployment.yaml |\
-/${TMP_DIR}/yq '.spec.template.spec.containers[0].image = "traefik:${TRAEFIK_VERSION}"' > "${TMP_DIR}/traefik-deployment.yaml"
+/${TMP_DIR}/yq ".spec.template.spec.containers[0].image = \"traefik:${TRAEFIK_VERSION}\"" > "${TMP_DIR}/traefik-deployment.yaml"
 
   kubectl apply -f "${TMP_DIR}/traefik-deployment.yaml" &>> "${LOG_FILE}"
 

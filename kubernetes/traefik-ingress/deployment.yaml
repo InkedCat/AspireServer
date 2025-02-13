@@ -20,8 +20,21 @@ spec:
         - name: traefik
           image: traefik:v3.3
           args:
-            - --api
+            - --global.checkNewVersion=true
+            - --global.sendAnonymousUsage=false
+
+            - --api.dashboard=true
             - --providers.kubernetesCRD
+
+            - --entrypoints.web.address=:80
+            - --entrypoints.web.http.redirections.entryPoint.to=websecure
+            - --entrypoints.web.http.redirections.entryPoint.scheme=https
+            - --entrypoints.web.http.redirections.entryPoint.permanent=true
+
+            - --entrypoints.websecure.address=:443
+
+            - --entrypoints.vpn-web.address=:81
+            - --entrypoints.vpn-web.http.middlewares=vpn-only
           resources:
             limits:
               memory: "512Mi"
