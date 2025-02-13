@@ -135,7 +135,7 @@ install_traefik_pre() {
 install_traefik_extra() {
   echo_info "Installing Traefik extra components..."
 
-  kubectl apply -f ./kubernetes/traefik-ingress/middlewares/https*redirect.yaml &>> "${LOG_FILE}"
+  kubectl apply -f ./kubernetes/traefik-ingress/middlewares/https-redirect.yaml &>> "${LOG_FILE}"
   kubectl apply -f ./kubernetes/traefik-ingress/routes/api.yaml &>> "${LOG_FILE}"
   kubectl apply -f ./kubernetes/traefik-ingress/service.yaml &>> "${LOG_FILE}"
   kubectl apply -f ./kubernetes/traefik-ingress/tls/staging-tls.yaml &>> "${LOG_FILE}"
