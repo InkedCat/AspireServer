@@ -149,9 +149,10 @@ install_traefik_extra() {
 install_catch_all() {
   echo_info "Installing Catch-All..."
 
+  kubectl apply -f ./kubernetes/catch-all/nginx-config.yaml &>> "${LOG_FILE}"
   kubectl apply -f ./kubernetes/catch-all/deployment.yaml &>> "${LOG_FILE}"
   kubectl apply -f ./kubernetes/catch-all/route.yaml &>> "${LOG_FILE}"
-  kubectl apply -f ./kubernetes/catch-all/nginx-config.yaml &>> "${LOG_FILE}"
+  kubectl apply -f ./kubernetes/catch-all/errors-redirect.yaml &>> "${LOG_FILE}"
 
   echo_success "Catch-All installed !"
 }
@@ -162,6 +163,8 @@ install_traefik() {
   install_traefik_crds
 
   install_traefik_pre
+
+  install_catch_all
  
   /${TMP_DIR}/yq ".spec.template.spec.containers[0].image = \"traefik:${TRAEFIK_VERSION}\"" < ./kubernetes/traefik-ingress/deployment.yaml > "${TMP_DIR}/traefik-deployment.yaml"
 
