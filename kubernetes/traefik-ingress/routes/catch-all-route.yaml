@@ -1,0 +1,17 @@
+apiVersion: traefik.io/v1alpha1
+kind: IngressRoute
+metadata:
+  name: catch-all-route
+  namespace: staging
+spec:
+  entryPoints:
+    - web
+    - websecure
+  routes:
+    - match: HostRegexp(`.+`)
+      kind: Rule
+      services:
+        - name: catch-all
+          port: 80
+      middlewares:
+        - name: errors-redirect

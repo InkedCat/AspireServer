@@ -1,0 +1,15 @@
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: errors-redirect
+spec:
+  errors:
+    status:
+      - "500"
+      - "501"
+      - "503"
+      - "505-599"
+    query: /{status}.html
+    service:
+      name: catch-all
+      port: 80
