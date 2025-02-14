@@ -33,3 +33,4 @@ kind: KubeletConfiguration
 resolvConf: /etc/resolv-kube.conf
 memorySwap:
   swapBehavior: LimitedSwap
+serverTLSBootstrap: true
