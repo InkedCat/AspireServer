@@ -146,6 +146,16 @@ install_traefik_extra() {
   echo_success "Traefik extra components installed !"
 }
 
+install_catch_all() {
+  echo_info "Installing Catch-All..."
+
+  kubectl apply -f ./kubernetes/catch-all/deployment.yaml &>> "${LOG_FILE}"
+  kubectl apply -f ./kubernetes/catch-all/route.yaml &>> "${LOG_FILE}"
+  kubectl apply -f ./kubernetes/catch-all/nginx-config.yaml &>> "${LOG_FILE}"
+
+  echo_success "Catch-All installed !"
+}
+
 install_traefik() {
   echo_info "Installing Traefik..."
 

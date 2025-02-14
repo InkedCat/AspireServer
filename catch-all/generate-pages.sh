@@ -85,12 +85,12 @@ generate_error_page() {
   sed -e "s/<title>.*<\/title>/<title>$error_code: $error_description<\/title>/" \
       -e "s/<h3>.*<\/h3>/<h3>Error $error_code<\/h3>/" \
       -e "s/<p class=\"description\">.*<\/p>/<p class=\"description\">$full_description<\/p>/" \
-      "./catch-all/template.html" > "./catch-all/errors/$error_code.html"
+      "./template.html" > "./errors/$error_code.html"
 }
 
 echo_info "Starting to generate errors"
 
-mkdir -p "./catch-all/errors"   
+mkdir -p "./errors"
 
 for error_code in "${!http_status_codes[@]}"; do
     error_description="${http_status_codes[$error_code]%%|*}"
