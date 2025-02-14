@@ -180,7 +180,7 @@ init_kubeadm() {
     select(.kind == \"InitConfiguration\").nodeRegistration.kubeletExtraArgs.[0].value = \"${PRIMARY_IPV4}\" |
     select(.kind == \"InitConfiguration\").localAPIEndpoint.advertiseAddress = \"${PRIMARY_IPV4}\" |
     select(.kind == \"ClusterConfiguration\").kubernetesVersion = \"${K8S_VERSION}\"
-  " < ./kubernetes/kubeadm.yaml > "./kubeadm.yaml"
+  " < ./kubernetes/kubeadm.yaml > "${TMP_DIR}/kubeadm.yaml"
 
   sudo kubeadm init --config "${TMP_DIR}/kubeadm.yaml" &>> "${LOG_FILE}"
 
