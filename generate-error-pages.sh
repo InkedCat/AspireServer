@@ -86,15 +86,15 @@ generate_error_page() {
       -e "s/<h3>.*<\/h3>/<h3>Error $error_code<\/h3>/" \
       -e "s/<p class=\"description\">.*<\/p>/<p class=\"description\">$full_description<\/p>/" \
       "./catch-all/template.html" > "./catch-all/errors/$error_code.html"
-
-  echo_success "Error $error_code page created"
 }
 
 echo_info "Starting to generate errors"
 
+mkdir -p "./catch-all/errors"   
+
 for error_code in "${!http_status_codes[@]}"; do
-    local error_description="${http_status_codes[$error_code]%%|*}"
-    local full_description="${http_status_codes[$error_code]#*|}"
+    error_description="${http_status_codes[$error_code]%%|*}"
+    full_description="${http_status_codes[$error_code]#*|}"
 
     generate_error_page "$error_code" "$error_description" "$full_description"
 done
