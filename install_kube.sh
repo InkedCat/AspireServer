@@ -185,7 +185,7 @@ init_kubeadm() {
   " < ./kubernetes/kubeadm.yaml > "${TMP_DIR}/kubeadm.yaml"
 
   if [ -n "${CUSTOM_SAN}" ]; then
-    /${TMP_DIR}/yq eval -i "select(.kind == \"InitConfiguration\").apiServer.certSANs[0] = \"${CUSTOM_SAN}\"" "${TMP_DIR}/kubeadm.yaml"
+    /${TMP_DIR}/yq eval -i "select(.kind == \"ClusterConfiguration\").apiServer.certSANs[0] = \"${CUSTOM_SAN}\"" "${TMP_DIR}/kubeadm.yaml"
   fi
 
   sudo kubeadm init --config "${TMP_DIR}/kubeadm.yaml" &>> "${LOG_FILE}"
