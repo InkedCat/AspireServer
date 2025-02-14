@@ -233,6 +233,14 @@ configure_namespaces() {
   echo_success "Namespaces created !"
 }
 
+approve_csr() {
+  echo_info "Approving Kubelet CSRs..."
+
+  kubectl get csr | grep Pending | awk '{print $1}' | xargs kubectl certificate approve &>> "${LOG_FILE}"
+
+  echo_success "CSRs approved !"
+}
+
 ################################################################
 # Variables setup
 ################################################################
@@ -262,6 +270,15 @@ choose_interface() {
   echo_success "Selected interface: ${selected_interface}"
 }
 
+get_interface() {
+  selected_interface="$(ip -4 addr show "${CLUSTER_INTERFACE}" | grep inet | awk '{print $2 " " $NF}')"
+
+  if [ -z "${selected_interface}" ]; then
+    echo_error "Invalid interface provided, please update the .env file and try again."
+    choose_interface
+  fi
+}
+
 setup_cloudflare() {
   echo_warning "Please enter your Cloudflare API token to use for the cluster issuer"
 
@@ -271,9 +288,15 @@ setup_cloudflare() {
 }
 
 setup_variables() {
-  setup_cloudflare
-
-  choose_interface
+  if [ ! -n "${CLOUDFLARE_API_TOKEN}" ]; then
+    setup_cloudflare
+  fi
+  
+  if [ ! -n "${CLUSTER_INTERFACE}" ]; then
+    choose_interface
+  else 
+    get_interface
+  fi
 }
 
 ################################################################
@@ -305,10 +328,12 @@ install_cni
 
 install_cert_manager
 
+approve_csr
+
 install_metrics_server
 
 install_traefik
 
-wait_for_nodes
+wait_for_nodes  
 
 echo_success "Aspire Kubernetes installed !"
