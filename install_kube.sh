@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+source .env
+
 TMP_DIR="/tmp/aspire-$(date +%Y-%m-%d-%H_%M_%S)"
 readonly TMP_DIR
 
@@ -174,13 +176,17 @@ install_traefik() {
 init_kubeadm() {
   echo_info "Initializing the Kubernetes cluster..."
   
-  PRIMARY_IPV4="$(echo "${selected_interface}" | awk -F'[ /]+' '{print $1}')"
+  primary_ipv4="$(echo "${selected_interface}" | awk -F'[ /]+' '{print $1}')"
 
   /${TMP_DIR}/yq eval "
-    select(.kind == \"InitConfiguration\").nodeRegistration.kubeletExtraArgs.[0].value = \"${PRIMARY_IPV4}\" |
-    select(.kind == \"InitConfiguration\").localAPIEndpoint.advertiseAddress = \"${PRIMARY_IPV4}\" |
+    select(.kind == \"InitConfiguration\").nodeRegistration.kubeletExtraArgs.[0].value = \"${primary_ipv4}\" |
+    select(.kind == \"InitConfiguration\").localAPIEndpoint.advertiseAddress = \"${primary_ipv4}\" |
     select(.kind == \"ClusterConfiguration\").kubernetesVersion = \"${K8S_VERSION}\"
   " < ./kubernetes/kubeadm.yaml > "${TMP_DIR}/kubeadm.yaml"
+
+  if [ -n "${CUSTOM_SAN}" ]; then
+    /${TMP_DIR}/yq eval -i "select(.kind == \"InitConfiguration\").apiServer.certSANs[0] = \"${CUSTOM_SAN}\"" "${TMP_DIR}/kubeadm.yaml"
+  fi
 
   sudo kubeadm init --config "${TMP_DIR}/kubeadm.yaml" &>> "${LOG_FILE}"
 
@@ -267,7 +273,6 @@ setup_cloudflare() {
 setup_variables() {
   setup_cloudflare
 
-  
   choose_interface
 }
 
