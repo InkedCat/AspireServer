@@ -105,6 +105,7 @@ install_cert_manager() {
     echo_success "Cert Manager installed !"
   fi
 
+  /${TMP_DIR}/yq " .stringData.api-token = \"${CLOUDFLARE_API_TOKEN}\"" < ./kubernetes/secrets/cloudflare-token.yaml > "${TMP_DIR}/cloudflare-token-secret.yaml"
   kubectl apply -f "${TMP_DIR}/cloudflare-token-secret.yaml" &>> "${LOG_FILE}"
   rm "${TMP_DIR}/cloudflare-token-secret.yaml"
 
@@ -150,8 +151,7 @@ install_traefik() {
 
   install_traefik_pre
  
-  cat ./kubernetes/traefik-ingress/deployment.yaml |\
-/${TMP_DIR}/yq ".spec.template.spec.containers[0].image = \"traefik:${TRAEFIK_VERSION}\"" > "${TMP_DIR}/traefik-deployment.yaml"
+  /${TMP_DIR}/yq ".spec.template.spec.containers[0].image = \"traefik:${TRAEFIK_VERSION}\"" < ./kubernetes/traefik-ingress/deployment.yaml > "${TMP_DIR}/traefik-deployment.yaml"
 
   kubectl apply -f "${TMP_DIR}/traefik-deployment.yaml" &>> "${LOG_FILE}"
 
@@ -174,11 +174,13 @@ install_traefik() {
 init_kubeadm() {
   echo_info "Initializing the Kubernetes cluster..."
   
-  export PRIMARY_IPV4="$(echo "${selected_interface}" | awk -F'[ /]+' '{print $1}')"
-  export KUBERNETES_VERSION="${K8S_VERSION}"
-  envsubst < ./kubernetes/kubeadm.yaml > "${TMP_DIR}/kubeadm.yaml"
-  unset PRIMARY_IPV4
-  unset KUBERNETES_VERSION
+  PRIMARY_IPV4="$(echo "${selected_interface}" | awk -F'[ /]+' '{print $1}')"
+
+  /${TMP_DIR}/yq eval "
+    select(.kind == \"InitConfiguration\").nodeRegistration.kubeletExtraArgs.[0].value = \"${PRIMARY_IPV4}\" |
+    select(.kind == \"InitConfiguration\").localAPIEndpoint.advertiseAddress = \"${PRIMARY_IPV4}\" |
+    select(.kind == \"ClusterConfiguration\").kubernetesVersion = \"${K8S_VERSION}\"
+  " < ./kubernetes/kubeadm.yaml > "./kubeadm.yaml"
 
   sudo kubeadm init --config "${TMP_DIR}/kubeadm.yaml" &>> "${LOG_FILE}"
 
@@ -230,6 +232,7 @@ configure_namespaces() {
 ################################################################
 
 choose_interface() {
+  echo_warning "Please choose the network interface to use for the cluster"
   while true; do
     echo_info "Available network interfaces:"
     interfaces="$(ip -4 addr show scope global | grep inet | awk '{print $2 " " $NF}')"
@@ -250,15 +253,13 @@ choose_interface() {
       break
     fi
   done
+  echo_success "Selected interface: ${selected_interface}"
 }
 
 setup_cloudflare() {
   echo_warning "Please enter your Cloudflare API token to use for the cluster issuer"
-  read -r -p "CF Token: " CLOUDFLARE_API_TOKEN
 
-  export CLOUDFLARE_API_TOKEN="${CLOUDFLARE_API_TOKEN}"
-  envsubst < ./kubernetes/secrets/cloudflare-token.yaml > "${TMP_DIR}/cloudflare-token-secret.yaml"
-  unset CLOUDFLARE_API_TOKEN
+  read -r -p "CF Token: " CLOUDFLARE_API_TOKEN
 
   echo_success "Cloudflare API Token secret created !"
 }
@@ -266,9 +267,8 @@ setup_cloudflare() {
 setup_variables() {
   setup_cloudflare
 
-  echo_warning "Please choose the network interface to use for the cluster"
+  
   choose_interface
-  echo_success "Selected interface: ${selected_interface}"
 }
 
 ################################################################

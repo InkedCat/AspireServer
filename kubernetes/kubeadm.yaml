@@ -25,6 +25,8 @@ clusterName: dedi-fedora-cluster
 encryptionAlgorithm: RSA-4096
 caCertificateValidityPeriod: 87600h0m0s
 certificateValidityPeriod: 8760h0m0s
+apiServer:
+  certSANs:
 ---
 apiVersion: kubelet.config.k8s.io/v1beta1
 kind: KubeletConfiguration
