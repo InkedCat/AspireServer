@@ -151,9 +151,7 @@ install_traefik_extra() {
     kubectl apply -f "${TMP_DIR}/vpn-only.yaml" &>> "${LOG_FILE}"
   fi
 
-  local primary_ipv4="$(echo "${selected_interface}" | awk -F'[ /]+' '{print $1}')"
-  /${TMP_DIR}/yq ".spec.externalIPs[0] = \"${primary_ipv4}\"" < ./kubernetes/traefik-ingress/service.yaml > "${TMP_DIR}/traefik-service.yaml"
-  kubectl apply -f "${TMP_DIR}/traefik-service.yaml" &>> "${LOG_FILE}"
+  kubectl apply -f "./kubernetes/traefik-ingress/service.yaml" &>> "${LOG_FILE}"
 
   echo_success "Traefik extra components installed !"
 }

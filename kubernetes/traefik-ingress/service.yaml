@@ -4,20 +4,22 @@ metadata:
   name: traefik
 
 spec:
+  type: NodePort
   selector:
     app.kubernetes.io/name: traefik
   ports:
     - name: web
       protocol: TCP
-      port: 80
+      port: 8000
       targetPort: web
+      nodePort: 30080
     - name: websecure
       protocol: TCP
-      port: 443
+      port: 8443
       targetPort: websecure
+      nodePort: 30443
     - name: vpn-web
       protocol: TCP
-      port: 81
+      port: 8081
       targetPort: vpn-web
-  externalIPs:
-    -
+      nodePort: 30081
