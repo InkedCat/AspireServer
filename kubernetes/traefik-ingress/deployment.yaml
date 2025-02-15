@@ -19,7 +19,7 @@ spec:
         app.kubernetes.io/instance: traefik-kube-system
         app.kubernetes.io/name: traefik
     spec:
-      serviceAccountName: traefik-account
+      serviceAccountName: traefik
       containers:
         - name: traefik
           image: traefik:v3.3

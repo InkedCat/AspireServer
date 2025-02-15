@@ -24,8 +24,8 @@ spec:
       port: 8443
       targetPort: websecure
       nodePort: 30443
-    - name: vpn-web
+    - name: internal
       protocol: TCP
-      port: 8081
-      targetPort: vpn-web
-      nodePort: 30081
+      port: 9000
+      targetPort: internal
+      nodePort: 30090
