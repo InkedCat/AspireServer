@@ -3,14 +3,7 @@ kind: Service
 metadata:
   name: traefik
 
-status:
-  loadBalancer:
-    ingress:
-      - ip: ""
-        ipMode: VIP
-
 spec:
-  type: LoadBalancer
   selector:
     app.kubernetes.io/name: traefik
   ports:
@@ -26,3 +19,5 @@ spec:
       protocol: TCP
       port: 81
       targetPort: vpn-web
+  externalIPs:
+    -
