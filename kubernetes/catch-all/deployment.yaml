@@ -27,7 +27,7 @@ spec:
               mountPath: /data
       containers:
         - name: catch-all
-          image: catch-all:latest
+          image: nginx:1.27-alpine
           resources:
             limits:
               memory: "256Mi"

@@ -10,6 +10,7 @@ spec:
   routes:
     - match: HostRegexp(`.+`)
       kind: Rule
+      priority: 1
       services:
         - name: catch-all
           port: 80
