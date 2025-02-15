@@ -10,7 +10,7 @@ status:
         ipMode: VIP
 
 spec:
-  type: ClusterIP
+  type: LoadBalancer
   selector:
     app.kubernetes.io/name: traefik
   ports:
