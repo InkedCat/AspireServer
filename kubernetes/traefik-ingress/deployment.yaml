@@ -35,6 +35,8 @@ spec:
 
             - --entrypoints.vpn-web.address=:81
             - --entrypoints.vpn-web.http.middlewares=vpn-only
+            - --log.level=DEBUG
+            - --accesslog=true
           resources:
             limits:
               memory: "512Mi"

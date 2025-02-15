@@ -20,8 +20,9 @@ spec:
             - /bin/sh
             - -c
             - "git clone https://github.com/InkedCat/AspireServer /aspire"
-            - "./aspire/catch-all/generate-pages.sh"
-            - "cp -r ./aspire/catch-all/errors /data"
+            - "cp /aspire/catch-all/ /"
+            - "./generate-pages.sh"
+            - "cp -r /errors /data"
           volumeMounts:
             - name: html-volume
               mountPath: /data
