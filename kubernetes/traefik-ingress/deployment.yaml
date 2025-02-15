@@ -24,17 +24,20 @@ spec:
             - --global.sendAnonymousUsage=false
 
             - --api.dashboard=true
+            - --ping=true
             - --providers.kubernetesCRD
 
-            - --entrypoints.web.address=:80
+            - --entrypoints.web.address=:8080
             - --entrypoints.web.http.redirections.entryPoint.to=websecure
             - --entrypoints.web.http.redirections.entryPoint.scheme=https
             - --entrypoints.web.http.redirections.entryPoint.permanent=true
 
-            - --entrypoints.websecure.address=:443
+            - --entrypoints.websecure.address=:8443
+            - --entrypoints.websecure.http.tls=true
 
-            - --entrypoints.vpn-web.address=:81
+            - --entrypoints.vpn-web.address=:8081
             - --entrypoints.vpn-web.http.middlewares=vpn-only
+
             - --log.level=DEBUG
             - --accesslog=true
           resources:
@@ -46,8 +49,28 @@ spec:
               cpu: "250m"
           ports:
             - name: web
-              containerPort: 80
+              containerPort: 8080
             - name: websecure
-              containerPort: 443
+              containerPort: 8443
             - name: vpn-web
-              containerPort: 81
+              containerPort: 8081
+          livenessProbe:
+            httpGet:
+              path: /ping
+              port: 9000
+              scheme: HTTP
+            initialDelaySeconds: 2
+            timeoutSeconds: 2
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ping
+              port: 9000
+              scheme: HTTP
+            initialDelaySeconds: 2
+            timeoutSeconds: 2
+            periodSeconds: 10
+            successThreshold: 1
+            failureThreshold: 1

@@ -3,6 +3,12 @@ kind: Service
 metadata:
   name: traefik
 
+status:
+  loadBalancer:
+    ingress:
+      - ip: ""
+        ipMode: VIP
+
 spec:
   type: ClusterIP
   selector:

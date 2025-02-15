@@ -139,7 +139,6 @@ install_traefik_extra() {
   echo_info "Installing Traefik extra components..."
 
   kubectl apply -f ./kubernetes/traefik-ingress/routes/api.yaml &>> "${LOG_FILE}"
-  kubectl apply -f ./kubernetes/traefik-ingress/service.yaml &>> "${LOG_FILE}"
   kubectl apply -f ./kubernetes/traefik-ingress/tls/option.yaml &>> "${LOG_FILE}"
 
   if [ -n "${IP_ALLOW_LIST}" ]; then
@@ -151,6 +150,10 @@ install_traefik_extra() {
 
     kubectl apply -f "${TMP_DIR}/vpn-only.yaml" &>> "${LOG_FILE}"
   fi
+
+  local primary_ipv4="$(echo "${selected_interface}" | awk -F'[ /]+' '{print $1}')"
+  /${TMP_DIR}/yq ".status.loadBalancer.ingress[0].ip = \"${primary_ipv4}\"" < ./kubernetes/traefik-ingress/service.yaml > "${TMP_DIR}/traefik-service.yaml"
+  kubectl apply -f "${TMP_DIR}/traefik-service.yaml" &>> "${LOG_FILE}"
 
   echo_success "Traefik extra components installed !"
 }
@@ -199,7 +202,7 @@ install_traefik() {
 init_kubeadm() {
   echo_info "Initializing the Kubernetes cluster..."
   
-  primary_ipv4="$(echo "${selected_interface}" | awk -F'[ /]+' '{print $1}')"
+  local primary_ipv4="$(echo "${selected_interface}" | awk -F'[ /]+' '{print $1}')"
 
   /${TMP_DIR}/yq eval "
     select(.kind == \"InitConfiguration\").nodeRegistration.kubeletExtraArgs.[0].value = \"${primary_ipv4}\" |
