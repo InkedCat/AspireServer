@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-
 http_status_codes=(
     ["100"]="Continue|The server has received the request headers and the client should proceed to send the request body."
     ["101"]="Switching Protocols|The server is switching protocols as requested by the client."
