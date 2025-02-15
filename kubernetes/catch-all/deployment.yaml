@@ -15,7 +15,7 @@ spec:
     spec:
       initContainers:
         - name: clone-repo
-          image: alpine/git
+          image: bitnami/git:2.48.1
           command: ["/bin/sh", "-c"]
           args:
             [
