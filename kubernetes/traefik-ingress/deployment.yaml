@@ -27,7 +27,7 @@ spec:
             - --ping=true
             - --providers.kubernetesCRD
 
-            - --entrypoints.web.address=:8080
+            - --entrypoints.web.address=:8000
             - --entrypoints.web.http.redirections.entryPoint.to=websecure
             - --entrypoints.web.http.redirections.entryPoint.scheme=https
             - --entrypoints.web.http.redirections.entryPoint.permanent=true
@@ -49,28 +49,8 @@ spec:
               cpu: "250m"
           ports:
             - name: web
-              containerPort: 8080
+              containerPort: 8000
             - name: websecure
               containerPort: 8443
             - name: vpn-web
               containerPort: 8081
-          livenessProbe:
-            httpGet:
-              path: /ping
-              port: 9000
-              scheme: HTTP
-            initialDelaySeconds: 2
-            timeoutSeconds: 2
-            periodSeconds: 10
-            successThreshold: 1
-            failureThreshold: 3
-          readinessProbe:
-            httpGet:
-              path: /ping
-              port: 9000
-              scheme: HTTP
-            initialDelaySeconds: 2
-            timeoutSeconds: 2
-            periodSeconds: 10
-            successThreshold: 1
-            failureThreshold: 1
