@@ -64,16 +64,12 @@ http_status_codes=(
     ["511"]="Network Authentication Required|The client needs to authenticate to gain network access."
 )
 
-blue=$(tput setaf 4)
-green=$(tput setaf 2)
-reset=$(tput sgr0)
-
 echo_info() {
-  printf "%s[INFO]%s %s\n" "${blue}" "${reset}" "$1"
+  printf "[INFO] %s\n" "$1"
 }
 
 echo_success() {
-  printf "%s[SUCCESS]%s %s\n" "${green}" "${reset}" "$1"
+  printf "[SUCCESS] %s\n" "$1"
 }
 
 generate_error_page() {
