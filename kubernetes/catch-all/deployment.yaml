@@ -16,13 +16,11 @@ spec:
       initContainers:
         - name: clone-repo
           image: alpine/git
-          command:
-            - /bin/sh
-            - -c
-            - "git clone https://github.com/InkedCat/AspireServer /aspire"
-            - "cp /aspire/catch-all/ /"
-            - "./generate-pages.sh"
-            - "cp -r /errors /data"
+          command: ["/bin/sh", "-c"]
+          args:
+            [
+              git clone https://github.com/InkedCat/AspireServer /aspire && cp /aspire/catch-all/* / && /generate-pages.sh && cp -r /errors/ /data,
+            ]
           volumeMounts:
             - name: html-volume
               mountPath: /data
