@@ -142,6 +142,16 @@ install_traefik_extra() {
   kubectl apply -f ./kubernetes/traefik-ingress/service.yaml &>> "${LOG_FILE}"
   kubectl apply -f ./kubernetes/traefik-ingress/tls/option.yaml &>> "${LOG_FILE}"
 
+  if [ -n "${IP_ALLOW_LIST}" ]; then
+    cp ./kubernetes/traefik-ingress/middlewares/vpn-only.yaml "${TMP_DIR}/vpn-only.yaml"
+
+    for ip in $(echo "${IP_ALLOW_LIST}" | tr ";" "\n"); do
+      /${TMP_DIR}/yq ".spec.ipAllowList.sourceRange += [\"${ip}\"]" -i "${TMP_DIR}/vpn-only.yaml"
+    done
+
+    kubectl apply -f "${TMP_DIR}/vpn-only.yaml" &>> "${LOG_FILE}"
+  fi
+
   echo_success "Traefik extra components installed !"
 }
 
