@@ -2,12 +2,12 @@ apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
   name: traefik-dashboard
-  namespace: staging
+  namespace: kube-system
 spec:
   entryPoints:
-    - vpn-web
+    - internal
   routes:
-    - match: Host(`traefik.staging.internal`)
+    - match: PathPrefix(`/dashboard`) || PathPrefix(`/api`)
       kind: Rule
       services:
         - name: api@internal

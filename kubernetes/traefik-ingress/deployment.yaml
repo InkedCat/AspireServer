@@ -1,19 +1,23 @@
 kind: Deployment
 apiVersion: apps/v1
 metadata:
-  name: traefik-deployment
+  name: traefik
+  namespace: kube-system
   labels:
-    app: traefik
+    app.kubernetes.io/instance: traefik-kube-system
+    app.kubernetes.io/name: traefik
 
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: traefik
+      app.kubernetes.io/instance: traefik-kube-system
+      app.kubernetes.io/name: traefik
   template:
     metadata:
       labels:
-        app: traefik
+        app.kubernetes.io/instance: traefik-kube-system
+        app.kubernetes.io/name: traefik
     spec:
       serviceAccountName: traefik-account
       containers:
@@ -35,8 +39,7 @@ spec:
             - --entrypoints.websecure.address=:8443
             - --entrypoints.websecure.http.tls=true
 
-            - --entrypoints.vpn-web.address=:8081
-            - --entrypoints.vpn-web.http.middlewares=vpn-only
+            - --entrypoints.internal.address=:9000
 
             - --log.level=DEBUG
             - --accesslog=true

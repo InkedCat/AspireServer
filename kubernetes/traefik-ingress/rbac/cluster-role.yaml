@@ -1,7 +1,10 @@
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
-  name: traefik-role
+  name: traefik-kube-system
+  labels:
+    app.kubernetes.io/instance: traefik-kube-system
+    app.kubernetes.io/name: traefik
 
 rules:
   - apiGroups:
