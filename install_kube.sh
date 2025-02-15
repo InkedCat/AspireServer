@@ -162,6 +162,7 @@ install_catch_all() {
   kubectl apply -f ./kubernetes/catch-all/deployment.yaml &>> "${LOG_FILE}"
   kubectl apply -f ./kubernetes/catch-all/route.yaml &>> "${LOG_FILE}"
   kubectl apply -f ./kubernetes/catch-all/errors-redirect.yaml &>> "${LOG_FILE}"
+  kubectl apply -f ./kubernetes/catch-all/service.yaml &>> "${LOG_FILE}"
 
   echo_success "Catch-All installed !"
 }

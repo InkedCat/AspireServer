@@ -8,7 +8,7 @@ spec:
     - name: web
       protocol: TCP
       port: 80
-      nodePort: 8080
+      targetPort: 8080
   selector:
     app: traefik
 ---
@@ -22,7 +22,7 @@ spec:
     - name: websecure
       protocol: TCP
       port: 443
-      nodePort: 8443
+      targetPort: 8443
   selector:
     app: traefik
 ---
@@ -36,6 +36,6 @@ spec:
     - name: vpn-web
       protocol: TCP
       port: 81
-      nodePort: 8081
+      targetPort: 8081
   selector:
     app: traefik
