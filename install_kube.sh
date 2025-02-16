@@ -101,8 +101,8 @@ install_cert_manager() {
   kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/${CERT_MANAGER_VERSION}/cert-manager.yaml &>> "${LOG_FILE}"
 
   echo_info "Waiting for Cert Manager to be ready..."
-  if ! kubectl wait --for=condition=available --timeout=30s deployment/cert-manager-webhook -n cert-manager &>> "${LOG_FILE}"; then
-    echo_warning "Cert Manager not healthy after 30s. Please check the logs to see what went wrong."
+  if ! kubectl wait --for=condition=available --timeout=60s deployment/cert-manager-webhook -n cert-manager &>> "${LOG_FILE}"; then
+    echo_warning "Cert Manager not healthy after 60s. Please check the logs to see what went wrong."
   else
     echo_success "Cert Manager installed !"
   fi
