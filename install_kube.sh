@@ -149,10 +149,10 @@ install_traefik_extra() {
 install_catch_all() {
   echo_info "Installing Catch-All..."
 
-  kubectl apply -f ./kubernetes/catch-all/nginx-config.yaml &>> "${LOG_FILE}"
+  kubectl apply -f ./kubernetes/catch-all/catch-all-config.yaml &>> "${LOG_FILE}"
   kubectl apply -f ./kubernetes/catch-all/deployment.yaml &>> "${LOG_FILE}"
   kubectl apply -f ./kubernetes/catch-all/route.yaml &>> "${LOG_FILE}"
-  kubectl apply -f ./kubernetes/catch-all/errors-redirect.yaml &>> "${LOG_FILE}"
+  kubectl apply -f ./kubernetes/catch-all/redirect.yaml &>> "${LOG_FILE}"
   kubectl apply -f ./kubernetes/catch-all/service.yaml &>> "${LOG_FILE}"
 
   echo_success "Catch-All installed !"
