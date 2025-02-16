@@ -172,8 +172,8 @@ install_traefik() {
   kubectl apply -f "${TMP_DIR}/traefik-deployment.yaml" &>> "${LOG_FILE}"
 
   echo_info "Waiting for Traefik to be ready..."
-  if ! kubectl wait --for=condition=available --timeout=30s deployment/traefik-deployment &>> "${LOG_FILE}"; then
-    echo_warning "Traefik not healthy after 30s. Please check the logs to see what went wrong."
+  if ! kubectl wait --for=condition=available --timeout=60s deployment/traefik-deployment &>> "${LOG_FILE}"; then
+    echo_warning "Traefik not healthy after 60s. Please check the logs to see what went wrong."
   else
     echo_success "Traefik installed !"
   fi
