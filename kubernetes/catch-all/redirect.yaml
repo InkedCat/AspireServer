@@ -1,7 +1,12 @@
 apiVersion: traefik.io/v1alpha1
 kind: Middleware
 metadata:
-  name: errors-redirect
+  name: catch-all-redirect
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: catch-all
+    app.kubernetes.io/instance: catch-all-kube-system
+
 spec:
   errors:
     status:
@@ -12,4 +17,4 @@ spec:
     query: /{status}.html
     service:
       name: catch-all
-      port: 80
+      port: catch-all

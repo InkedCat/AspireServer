@@ -1,17 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: catch-all-deployment
+  name: catch-all
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: catch-all
+    app.kubernetes.io/instance: catch-all-kube-system
 
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: catch-all
+      app.kubernetes.io/name: catch-all
+      app.kubernetes.io/instance: catch-all-kube-system
   template:
     metadata:
       labels:
-        app: catch-all
+        app.kubernetes.io/name: catch-all
+        app.kubernetes.io/instance: catch-all-kube-system
     spec:
       initContainers:
         - name: clone-repo
@@ -35,7 +41,8 @@ spec:
               memory: "128Mi"
               cpu: "125m"
           ports:
-            - containerPort: 80
+            - name: catch-all
+              containerPort: 7000
           volumeMounts:
             - name: config-volume
               mountPath: /etc/nginx/nginx.conf
@@ -45,6 +52,6 @@ spec:
       volumes:
         - name: config-volume
           configMap:
-            name: nginx-config
+            name: catch-all-config
         - name: html-volume
           emptyDir: {}

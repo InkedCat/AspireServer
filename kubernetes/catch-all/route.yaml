@@ -1,8 +1,12 @@
 apiVersion: traefik.io/v1alpha1
 kind: IngressRoute
 metadata:
-  name: catch-all-route
-  namespace: staging
+  name: catch-all
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: catch-all
+    app.kubernetes.io/instance: catch-all-kube-system
+
 spec:
   entryPoints:
     - web
@@ -13,6 +17,4 @@ spec:
       priority: 1
       services:
         - name: catch-all
-          port: 80
-      middlewares:
-        - name: errors-redirect
+          port: catch-all

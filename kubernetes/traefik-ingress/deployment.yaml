@@ -4,25 +4,31 @@ metadata:
   name: traefik
   namespace: kube-system
   labels:
-    app.kubernetes.io/instance: traefik-kube-system
     app.kubernetes.io/name: traefik
+    app.kubernetes.io/instance: traefik-kube-system
 
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app.kubernetes.io/instance: traefik-kube-system
       app.kubernetes.io/name: traefik
+      app.kubernetes.io/instance: traefik-kube-system
   template:
     metadata:
       labels:
-        app.kubernetes.io/instance: traefik-kube-system
         app.kubernetes.io/name: traefik
+        app.kubernetes.io/instance: traefik-kube-system
     spec:
       serviceAccountName: traefik
+      priorityClassName: system-cluster-critical
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        fsGroup: 65532
       containers:
         - name: traefik
           image: traefik:v3.3
+          imagePullPolicy: Always
           args:
             - --global.checkNewVersion=true
             - --global.sendAnonymousUsage=false
@@ -30,6 +36,7 @@ spec:
             - --api.dashboard=true
             - --ping=true
             - --providers.kubernetesCRD
+            - --providers.kubernetesingress
 
             - --entrypoints.web.address=:8000
             - --entrypoints.web.http.redirections.entryPoint.to=websecure
@@ -57,3 +64,9 @@ spec:
               containerPort: 8443
             - name: vpn-web
               containerPort: 8081
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
