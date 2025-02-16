@@ -62,8 +62,8 @@ spec:
               containerPort: 8000
             - name: websecure
               containerPort: 8443
-            - name: vpn-web
-              containerPort: 8081
+            - name: internal
+              containerPort: 9000
           securityContext:
             readOnlyRootFilesystem: true
             allowPrivilegeEscalation: false
