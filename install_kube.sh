@@ -255,6 +255,23 @@ approve_csr() {
   echo_success "CSRs approved !"
 }
 
+
+capture_join_command() {
+  local join_command=$(kubeadm token create --print-join-command 2>/dev/null)
+  local token=$(echo $join_command | awk -F' ' '{print $5}')
+  local ca_cert_hash=$(openssl x509 -pubkey -in /etc/kubernetes/pki/ca.crt | openssl rsa -pubin -outform der 2>/dev/null | openssl dgst -sha256 | awk -F' ' '{print $2}')
+
+  # Write to .env file
+  cat <<EOF > worker.env
+CONTROL_PLANE_IP="$(echo "${selected_interface}" | awk -F'[ /]+' '{print $1}')"
+KUBEADM_TOKEN=$token
+CA_CERT_HASH=$ca_cert_hash
+EOF
+
+  echo_success "worker.env file created with join command details! Please copy this file to the worker node and run the join_kube.sh script."
+}
+
+
 ################################################################
 # Variables setup
 ################################################################
@@ -351,3 +368,5 @@ install_traefik
 wait_for_nodes  
 
 echo_success "Aspire Kubernetes installed !"
+
+capture_join_command
